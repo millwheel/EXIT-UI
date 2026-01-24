@@ -2,6 +2,7 @@
 
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from "next/image";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -25,7 +26,6 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        console.error(data.error);
         setError(data.error);
         return;
       }
@@ -39,34 +39,37 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="w-full max-w-sm bg-white rounded-lg shadow-md p-8">
-        <h1 className="text-2xl font-bold text-center text-gray-900 mb-8">EXIT</h1>
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="w-full max-w-sm bg-white rounded-lg p-8">
+        <div className="flex justify-center mb-6">
+          <Image
+              src="/logo.svg"
+              width={100}
+              height={100}
+              alt="EXIT"
+              draggable={false}
+              onDragStart={(e) => e.preventDefault()}
+          />
+        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
-              아이디
-            </label>
             <input
               id="username"
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#4CAF50] focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent"
               placeholder="아이디를 입력하세요"
               required
             />
           </div>
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-              비밀번호
-            </label>
             <input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#4CAF50] focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent"
               placeholder="비밀번호를 입력하세요"
               required
             />
@@ -77,7 +80,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 bg-[#4CAF50] text-white rounded font-medium hover:bg-[#43A047] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            className="w-full py-2.5 bg-[var(--primary)] text-white rounded font-medium hover:bg-[var(--primary-hover)] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             {loading ? '로그인 중...' : '로그인'}
           </button>
