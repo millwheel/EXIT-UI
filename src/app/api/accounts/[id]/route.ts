@@ -41,18 +41,18 @@ export async function PATCH(
   const body = await request.json();
   const { password, memo } = body;
 
-  if (!password) {
-    return NextResponse.json({ error: '비밀번호를 입력해주세요.' }, { status: 400 });
-  }
+  const data: { password?: string; memo?: string } = {};
 
-  const hashedPassword = await bcrypt.hash(password, 10);
+  if (password) {
+    data.password = await bcrypt.hash(password, 10);
+  }
+  if (memo !== undefined) {
+    data.memo = memo;
+  }
 
   const updated = await prisma.user.update({
     where: { id: targetId },
-    data: {
-      password: hashedPassword,
-      memo: memo !== undefined ? memo : target.memo,
-    },
+    data,
     include: { organization: true },
   });
 

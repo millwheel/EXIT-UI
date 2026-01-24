@@ -36,11 +36,6 @@ export default function AccountEditModal({ isOpen, onClose, onSuccess, account }
     if (!account) return;
     setError('');
 
-    if (!password) {
-      setError('비밀번호를 입력해주세요.');
-      return;
-    }
-
     setLoading(true);
 
     try {
@@ -97,13 +92,13 @@ export default function AccountEditModal({ isOpen, onClose, onSuccess, account }
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            비밀번호<span className="text-red-500">*</span>
+            비밀번호
           </label>
           <input
             type="text"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="비밀번호를 입력해주세요."
+            placeholder="변경 시에만 입력해주세요."
             autoComplete="off"
             className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#4CAF50] text-security-disc"
           />
