@@ -42,3 +42,14 @@ body {
 .text-security-disc {
   -webkit-text-security: disc;
 }
+
+.login-gradient {
+  background: linear-gradient(135deg, #1a5c3a 0%, #2E7D5A 40%, #1b6b45 70%, #164a30 100%);
+}
+
+.login-grid-pattern {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
