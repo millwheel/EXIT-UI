@@ -126,30 +126,28 @@ export default function AdsPage() {
         selectedIds={selectedIds}
         onSelectionChange={setSelectedIds}
         onEdit={(ad) => setEditAd(ad)}
-        showManage={canManage}
+        showCheckbox={canManage}
       />
 
       <Pagination />
 
       {canManage && (
-        <>
-          <AdCreateModal
-            isOpen={isCreateOpen}
-            onClose={() => setIsCreateOpen(false)}
-            onSuccess={handleCreateSuccess}
-            currentRole={currentRole}
-            organizationId={organizationId}
-          />
-
-          <AdEditModal
-            isOpen={!!editAd}
-            onClose={() => setEditAd(null)}
-            onSuccess={handleEditSuccess}
-            ad={editAd}
-            currentRole={currentRole}
-          />
-        </>
+        <AdCreateModal
+          isOpen={isCreateOpen}
+          onClose={() => setIsCreateOpen(false)}
+          onSuccess={handleCreateSuccess}
+          currentRole={currentRole}
+          organizationId={organizationId}
+        />
       )}
+
+      <AdEditModal
+        isOpen={!!editAd}
+        onClose={() => setEditAd(null)}
+        onSuccess={handleEditSuccess}
+        ad={editAd}
+        currentRole={currentRole}
+      />
     </div>
   );
 }

@@ -20,17 +20,13 @@ export default function AccountsPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editAccount, setEditAccount] = useState<User | null>(null);
 
-  const roleFilters: (string | null)[] = [null, 'MASTER', 'AGENCY', 'ADVERTISER'];
-
   const fetchAccounts = useCallback(async (roleFilter?: string | null) => {
     const params = roleFilter ? `?role=${roleFilter}` : '';
     const res = await fetch(`/api/accounts${params}`);
     if (res.ok) {
       const data = await res.json();
       setAccounts(data.accounts);
-      if (!roleFilter) {
-        setStats(data.stats);
-      }
+      setStats(data.stats);
     }
   }, []);
 
@@ -39,9 +35,15 @@ export default function AccountsPage() {
       const meRes = await fetch('/api/me');
       const meData = await meRes.json();
       if (meData.user) {
-        setCurrentRole(meData.user.role as Role);
+        const role = meData.user.role as Role;
+        setCurrentRole(role);
+        // AGENCY는 광고주만 볼 수 있음
+        if (role === 'AGENCY') {
+          await fetchAccounts('ADVERTISER');
+        } else {
+          await fetchAccounts();
+        }
       }
-      await fetchAccounts();
     }
     init();
   }, [fetchAccounts]);
@@ -49,8 +51,13 @@ export default function AccountsPage() {
   function handleStatSelect(index: number) {
     setSelectedStatIndex(index);
     setSelectedIds([]);
-    const filter = roleFilters[index];
-    fetchAccounts(filter);
+    // AGENCY는 항상 ADVERTISER 필터 적용
+    if (currentRole === 'AGENCY') {
+      fetchAccounts('ADVERTISER');
+    } else {
+      const roleFilters: (string | null)[] = [null, 'MASTER', 'AGENCY', 'ADVERTISER'];
+      fetchAccounts(roleFilters[index]);
+    }
   }
 
   async function handleDelete() {
@@ -71,7 +78,11 @@ export default function AccountsPage() {
       addToast(`${data.deletedCount}개 계정이 삭제되었습니다.`, 'success');
       setSelectedIds([]);
       setSelectedStatIndex(0);
-      fetchAccounts();
+      if (currentRole === 'AGENCY') {
+        fetchAccounts('ADVERTISER');
+      } else {
+        fetchAccounts();
+      }
     } else {
       addToast(data.error, 'error');
     }
@@ -80,20 +91,32 @@ export default function AccountsPage() {
   function handleCreateSuccess() {
     addToast('계정이 등록되었습니다.', 'success');
     setSelectedStatIndex(0);
-    fetchAccounts();
+    if (currentRole === 'AGENCY') {
+      fetchAccounts('ADVERTISER');
+    } else {
+      fetchAccounts();
+    }
   }
 
   function handleEditSuccess() {
     addToast('계정이 수정되었습니다.', 'success');
-    fetchAccounts(roleFilters[selectedStatIndex]);
+    if (currentRole === 'AGENCY') {
+      fetchAccounts('ADVERTISER');
+    } else {
+      const roleFilters: (string | null)[] = [null, 'MASTER', 'AGENCY', 'ADVERTISER'];
+      fetchAccounts(roleFilters[selectedStatIndex]);
+    }
   }
 
-  const statsItems = [
-    { label: '전체', value: stats.total },
-    { label: '총판사', value: stats.master },
-    { label: '대행사', value: stats.agency },
-    { label: '광고주', value: stats.advertiser },
-  ];
+  // AGENCY는 광고주만 표시
+  const statsItems = currentRole === 'AGENCY'
+    ? [{ label: '광고주', value: stats.advertiser }]
+    : [
+        { label: '전체', value: stats.total },
+        { label: '총판사', value: stats.master },
+        { label: '대행사', value: stats.agency },
+        { label: '광고주', value: stats.advertiser },
+      ];
 
   return (
     <div>

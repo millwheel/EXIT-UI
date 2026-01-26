@@ -60,7 +60,6 @@ export default function AccountTable({ accounts, selectedIds, onSelectionChange,
               <th className="px-3 py-3 text-left font-medium text-gray-600">No</th>
               <th className="px-3 py-3 text-left font-medium text-gray-600">아이디</th>
               <th className="px-3 py-3 text-left font-medium text-gray-600">권한</th>
-              <th className="px-3 py-3 text-center font-medium text-gray-600">광고</th>
               <th className="px-3 py-3 text-left font-medium text-gray-600 min-w-[200px]">메모</th>
               <th className="w-14 px-3 py-3 text-center font-medium text-gray-600">관리</th>
             </tr>
@@ -68,7 +67,7 @@ export default function AccountTable({ accounts, selectedIds, onSelectionChange,
           <tbody>
             {accounts.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-3 py-8 text-center text-gray-400">
+                <td colSpan={6} className="px-3 py-8 text-center text-gray-400">
                   등록된 계정이 없습니다.
                 </td>
               </tr>
@@ -89,15 +88,6 @@ export default function AccountTable({ accounts, selectedIds, onSelectionChange,
                     <span className={ROLE_STYLES[account.role] || ''}>
                       {ROLE_LABELS[account.role] || account.role}
                     </span>
-                  </td>
-                  <td className="px-3 py-3 text-center">
-                    {account.adCount !== undefined && account.adCount > 0 && (
-                      <span className="inline-flex items-center justify-center w-6 h-6 text-gray-500">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                        </svg>
-                      </span>
-                    )}
                   </td>
                   <td className="px-3 py-3 text-gray-600 truncate max-w-[200px]">{account.memo || ''}</td>
                   <td className="px-3 py-3 text-center">

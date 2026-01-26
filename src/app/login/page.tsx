@@ -63,10 +63,6 @@ export default function LoginPage() {
             onDragStart={(e) => e.preventDefault()}
             className="mx-auto mb-8"
           />
-          <p className="text-xl font-light text-white/80 leading-relaxed">
-            광고 성과를 한눈에 파악하고<br />
-            효율적으로 관리하세요
-          </p>
           <div className="mt-12 flex items-center justify-center gap-6 text-sm text-white/60">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-emerald-300" />
