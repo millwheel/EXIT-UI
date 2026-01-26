@@ -29,14 +29,14 @@ export default function StatsCard({ title, items, selectedIndex, onSelect }: Sta
             >
               <span
                 className={`text-2xl font-bold ${
-                  isSelected ? 'text-blue-500' : 'text-gray-900'
+                  isSelected ? 'text-[var(--primary-light)]' : 'text-gray-900'
                 }`}
               >
                 {item.value}
               </span>
               <span
                 className={`text-xs ${
-                  isSelected ? 'text-blue-500' : 'text-gray-500'
+                  isSelected ? 'text-[var(--primary-light)]' : 'text-gray-500'
                 }`}
               >
                 {item.label}

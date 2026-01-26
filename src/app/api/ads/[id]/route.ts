@@ -14,10 +14,6 @@ export async function PATCH(
 
   const role = session.role as Role;
 
-  if (role === 'ADVERTISER') {
-    return NextResponse.json({ error: '수정 권한이 없습니다.' }, { status: 403 });
-  }
-
   const { id } = await params;
   const targetId = parseInt(id, 10);
 
@@ -27,32 +23,31 @@ export async function PATCH(
     return NextResponse.json({ error: '광고를 찾을 수 없습니다.' }, { status: 404 });
   }
 
+  // 권한 체크: AGENCY는 자기 조직만, ADVERTISER는 자기 광고만
   if (role === 'AGENCY' && ad.organizationId !== session.organizationId) {
+    return NextResponse.json({ error: '수정 권한이 없습니다.' }, { status: 403 });
+  }
+  if (role === 'ADVERTISER' && ad.advertiserId !== session.id) {
     return NextResponse.json({ error: '수정 권한이 없습니다.' }, { status: 403 });
   }
 
   const body = await request.json();
-  const { status, keyword, rank, productName, productId, quantity, workingDays, startDate } = body;
+  const { status, keyword, rank, productName, quantity, startDate, endDate } = body;
 
   const updateData: Record<string, unknown> = {};
+  const isAdmin = role === 'MASTER' || role === 'AGENCY';
 
-  if (status !== undefined) updateData.status = status;
+  // 광고주는 키워드, 상품명, 시작일, 종료일만 수정 가능
   if (keyword !== undefined) updateData.keyword = keyword;
-  if (rank !== undefined) updateData.rank = rank;
   if (productName !== undefined) updateData.productName = productName;
-  if (productId !== undefined) updateData.productId = productId;
-  if (quantity !== undefined) updateData.quantity = quantity;
+  if (startDate !== undefined) updateData.startDate = new Date(startDate);
+  if (endDate !== undefined) updateData.endDate = new Date(endDate);
 
-  // Recompute endDate if startDate or workingDays changed
-  const newWorkingDays = workingDays !== undefined ? workingDays : ad.workingDays;
-  const newStartDate = startDate !== undefined ? new Date(startDate) : ad.startDate;
-
-  if (workingDays !== undefined || startDate !== undefined) {
-    updateData.workingDays = newWorkingDays;
-    updateData.startDate = newStartDate;
-    const end = new Date(newStartDate);
-    end.setDate(end.getDate() + newWorkingDays);
-    updateData.endDate = end;
+  // 관리자만 수정 가능한 필드
+  if (isAdmin) {
+    if (status !== undefined) updateData.status = status;
+    if (rank !== undefined) updateData.rank = rank;
+    if (quantity !== undefined) updateData.quantity = quantity;
   }
 
   const updated = await prisma.ad.update({

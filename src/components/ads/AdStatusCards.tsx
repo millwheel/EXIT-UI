@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { AdStatsGroup } from '@/types';
 
 interface AdStatusCardsProps {
@@ -15,59 +16,18 @@ interface StatItem {
   status: string | null;
 }
 
-function StatusCard({
-  title,
-  items,
-  selectedFilter,
-  onSelect,
-}: {
-  title: string;
-  items: StatItem[];
-  selectedFilter: { kind: string | null; status: string | null } | null;
-  onSelect: (item: StatItem) => void;
-}) {
-  return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
-      <div className="px-5 py-3 border-b border-gray-100">
-        <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
-      </div>
-      <div className="flex divide-x divide-gray-100">
-        {items.map((item) => {
-          const isSelected =
-            selectedFilter !== null &&
-            selectedFilter.kind === item.kind &&
-            selectedFilter.status === item.status;
-          return (
-            <button
-              key={`${item.kind}-${item.status}-${item.label}`}
-              onClick={() => onSelect(item)}
-              className="flex-1 py-5 flex flex-col items-center gap-1 cursor-pointer hover:bg-gray-50 transition-colors"
-            >
-              <span
-                className={`text-2xl font-bold ${
-                  isSelected ? 'text-blue-500' : 'text-gray-900'
-                }`}
-              >
-                {item.value}
-              </span>
-              <span
-                className={`text-xs ${
-                  isSelected ? 'text-blue-500' : 'text-gray-500'
-                }`}
-              >
-                {item.label}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
+type TabType = 'all' | 'paid' | 'test';
+
+const TABS: { key: TabType; label: string }[] = [
+  { key: 'all', label: '전체' },
+  { key: 'paid', label: '광고' },
+  { key: 'test', label: '테스트' },
+];
 
 export default function AdStatusCards({ stats, selectedFilter, onFilterChange }: AdStatusCardsProps) {
+  const [activeTab, setActiveTab] = useState<TabType>('all');
+
   function handleSelect(item: StatItem) {
-    // If clicking the same filter, deselect
     if (
       selectedFilter &&
       selectedFilter.kind === item.kind &&
@@ -79,54 +39,78 @@ export default function AdStatusCards({ stats, selectedFilter, onFilterChange }:
     onFilterChange({ kind: item.kind, status: item.status });
   }
 
-  const allItems: StatItem[] = [
-    { label: '전체', value: stats.all.total, kind: null, status: null },
-    { label: '정상', value: stats.all.active, kind: null, status: 'ACTIVE' },
-    { label: '오류', value: stats.all.error, kind: null, status: 'ERROR' },
-    { label: '대기', value: stats.all.waiting, kind: null, status: 'WAITING' },
-    { label: '종료예정', value: stats.all.endingSoon, kind: null, status: 'ENDING_SOON' },
-    { label: '종료', value: stats.all.ended, kind: null, status: 'ENDED' },
-  ];
+  function handleTabChange(tab: TabType) {
+    setActiveTab(tab);
+    // 탭 전환 시 해당 탭의 "전체" 자동 선택
+    const kind = tab === 'all' ? null : tab === 'paid' ? 'PAID' : 'TEST';
+    onFilterChange({ kind, status: null });
+  }
 
-  const paidItems: StatItem[] = [
-    { label: '전체', value: stats.paid.total, kind: 'PAID', status: null },
-    { label: '정상', value: stats.paid.active, kind: 'PAID', status: 'ACTIVE' },
-    { label: '오류', value: stats.paid.error, kind: 'PAID', status: 'ERROR' },
-    { label: '대기', value: stats.paid.waiting, kind: 'PAID', status: 'WAITING' },
-    { label: '종료예정', value: stats.paid.endingSoon, kind: 'PAID', status: 'ENDING_SOON' },
-    { label: '종료', value: stats.paid.ended, kind: 'PAID', status: 'ENDED' },
-  ];
+  function getItemsForTab(tab: TabType): StatItem[] {
+    const statData = stats[tab];
+    const kind = tab === 'all' ? null : tab === 'paid' ? 'PAID' : 'TEST';
 
-  const testItems: StatItem[] = [
-    { label: '전체', value: stats.test.total, kind: 'TEST', status: null },
-    { label: '정상', value: stats.test.active, kind: 'TEST', status: 'ACTIVE' },
-    { label: '오류', value: stats.test.error, kind: 'TEST', status: 'ERROR' },
-    { label: '대기', value: stats.test.waiting, kind: 'TEST', status: 'WAITING' },
-    { label: '종료예정', value: stats.test.endingSoon, kind: 'TEST', status: 'ENDING_SOON' },
-    { label: '종료', value: stats.test.ended, kind: 'TEST', status: 'ENDED' },
-  ];
+    return [
+      { label: '전체', value: statData.total, kind, status: null },
+      { label: '정상', value: statData.active, kind, status: 'ACTIVE' },
+      { label: '오류', value: statData.error, kind, status: 'ERROR' },
+      { label: '대기', value: statData.waiting, kind, status: 'WAITING' },
+      { label: '종료예정', value: statData.endingSoon, kind, status: 'ENDING_SOON' },
+      { label: '종료', value: statData.ended, kind, status: 'ENDED' },
+    ];
+  }
+
+  const currentItems = getItemsForTab(activeTab);
 
   return (
-    <div className="space-y-4">
-      <StatusCard
-        title="전체 현황"
-        items={allItems}
-        selectedFilter={selectedFilter}
-        onSelect={handleSelect}
-      />
-      <div className="grid grid-cols-2 gap-4">
-        <StatusCard
-          title="광고 현황"
-          items={paidItems}
-          selectedFilter={selectedFilter}
-          onSelect={handleSelect}
-        />
-        <StatusCard
-          title="테스트 현황"
-          items={testItems}
-          selectedFilter={selectedFilter}
-          onSelect={handleSelect}
-        />
+    <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
+      {/* 탭 헤더 */}
+      <div className="flex border-b border-gray-200">
+        {TABS.map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => handleTabChange(tab.key)}
+            className={`flex-1 py-3 text-sm font-medium transition-colors cursor-pointer ${
+              activeTab === tab.key
+                ? 'text-[var(--primary)] border-b-2 border-[var(--primary)] bg-gray-50'
+                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* 상태 항목들 */}
+      <div className="flex divide-x divide-gray-100">
+        {currentItems.map((item) => {
+          const isSelected =
+            selectedFilter !== null &&
+            selectedFilter.kind === item.kind &&
+            selectedFilter.status === item.status;
+          return (
+            <button
+              key={`${item.kind}-${item.status}-${item.label}`}
+              onClick={() => handleSelect(item)}
+              className="flex-1 py-5 flex flex-col items-center gap-1 cursor-pointer hover:bg-gray-50 transition-colors"
+            >
+              <span
+                className={`text-2xl font-bold ${
+                  isSelected ? 'text-[var(--primary-light)]' : 'text-gray-900'
+                }`}
+              >
+                {item.value}
+              </span>
+              <span
+                className={`text-xs ${
+                  isSelected ? 'text-[var(--primary-light)]' : 'text-gray-500'
+                }`}
+              >
+                {item.label}
+              </span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );

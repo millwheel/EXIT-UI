@@ -26,10 +26,9 @@ export default function AdEditModal({ isOpen, onClose, onSuccess, ad, currentRol
   const [keyword, setKeyword] = useState('');
   const [rank, setRank] = useState<number | ''>('');
   const [productName, setProductName] = useState('');
-  const [productId, setProductId] = useState('');
   const [quantity, setQuantity] = useState<number>(0);
-  const [workingDays, setWorkingDays] = useState<number>(0);
   const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -39,19 +38,22 @@ export default function AdEditModal({ isOpen, onClose, onSuccess, ad, currentRol
       setKeyword(ad.keyword || '');
       setRank(ad.rank ?? '');
       setProductName(ad.productName || '');
-      setProductId(ad.productId || '');
       setQuantity(ad.quantity || 0);
-      setWorkingDays(ad.workingDays);
       setStartDate(ad.startDate);
+      setEndDate(ad.endDate);
       setError('');
     }
   }, [isOpen, ad]);
 
-  function computeEndDate(): string {
-    if (!startDate || !workingDays) return '';
-    const start = new Date(startDate);
-    start.setDate(start.getDate() + workingDays);
-    return start.toISOString().split('T')[0];
+  function computeWorkingDays(): number {
+    if (!endDate) return 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const end = new Date(endDate);
+    end.setHours(0, 0, 0, 0);
+    const diffTime = end.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return Math.max(0, diffDays);
   }
 
   async function handleSubmit() {
@@ -65,10 +67,9 @@ export default function AdEditModal({ isOpen, onClose, onSuccess, ad, currentRol
         keyword: keyword || null,
         rank: rank === '' ? null : rank,
         productName: productName || null,
-        productId: productId || null,
         quantity,
-        workingDays,
         startDate,
+        endDate,
       };
 
       const res = await fetch(`/api/ads/${ad.id}`, {
@@ -95,7 +96,7 @@ export default function AdEditModal({ isOpen, onClose, onSuccess, ad, currentRol
 
   if (!ad) return null;
 
-  const canChangeStatus = currentRole === 'MASTER' || currentRole === 'AGENCY';
+  const isAdmin = currentRole === 'MASTER' || currentRole === 'AGENCY';
 
   return (
     <Modal
@@ -124,7 +125,7 @@ export default function AdEditModal({ isOpen, onClose, onSuccess, ad, currentRol
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">상태</label>
-          {canChangeStatus ? (
+          {isAdmin ? (
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
@@ -157,21 +158,39 @@ export default function AdEditModal({ isOpen, onClose, onSuccess, ad, currentRol
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">순위</label>
-            <input
-              type="number"
-              value={rank}
-              onChange={(e) => setRank(e.target.value === '' ? '' : Number(e.target.value))}
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#4CAF50]"
-            />
+            {isAdmin ? (
+              <input
+                type="number"
+                value={rank}
+                onChange={(e) => setRank(e.target.value === '' ? '' : Number(e.target.value))}
+                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#4CAF50]"
+              />
+            ) : (
+              <input
+                type="text"
+                value={rank === '' ? '-' : rank}
+                readOnly
+                className="w-full px-3 py-2 border border-gray-200 rounded bg-gray-100 text-gray-600"
+              />
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">수량</label>
-            <input
-              type="number"
-              value={quantity}
-              onChange={(e) => setQuantity(Number(e.target.value))}
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#4CAF50]"
-            />
+            {isAdmin ? (
+              <input
+                type="number"
+                value={quantity}
+                onChange={(e) => setQuantity(Number(e.target.value))}
+                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#4CAF50]"
+              />
+            ) : (
+              <input
+                type="text"
+                value={quantity}
+                readOnly
+                className="w-full px-3 py-2 border border-gray-200 rounded bg-gray-100 text-gray-600"
+              />
+            )}
           </div>
         </div>
 
@@ -185,26 +204,7 @@ export default function AdEditModal({ isOpen, onClose, onSuccess, ad, currentRol
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">프로덕트 ID</label>
-          <input
-            type="text"
-            value={productId}
-            onChange={(e) => setProductId(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#4CAF50]"
-          />
-        </div>
-
         <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">작업일수</label>
-            <input
-              type="number"
-              value={workingDays}
-              onChange={(e) => setWorkingDays(Number(e.target.value))}
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#4CAF50]"
-            />
-          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">시작일</label>
             <input
@@ -214,13 +214,22 @@ export default function AdEditModal({ isOpen, onClose, onSuccess, ad, currentRol
               className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#4CAF50]"
             />
           </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">종료일</label>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#4CAF50]"
+            />
+          </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">종료일 (자동계산)</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">작업일수 (자동계산: 종료일 - 오늘)</label>
           <input
             type="text"
-            value={computeEndDate()}
+            value={computeWorkingDays()}
             readOnly
             className="w-full px-3 py-2 border border-gray-200 rounded bg-gray-100 text-gray-600"
           />
