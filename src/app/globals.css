@@ -10,6 +10,7 @@
   --sidebar-width: 240px;
   --primary: #2E7D5A;
   --primary-hover: #256F52;
+  --primary-light: #4CAF50;
 }
 
 @theme inline {

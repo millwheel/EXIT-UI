@@ -52,7 +52,7 @@ export default function LoginPage() {
             onDragStart={(e) => e.preventDefault()}
             style={{ width: 200, height: 74 }}
           />
-          <div className="animate-character-enter" style={{ width: 100, height: 100, marginTop: 12}}>
+          <div className="animate-character-enter" style={{ width: 100, height: 100, marginTop: 12, marginLeft: -10 }}>
             <Image
               src="/character.png"
               width={100}
