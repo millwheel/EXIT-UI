@@ -100,7 +100,7 @@ export default function Sidebar({ role, username }: SidebarProps) {
       <div className="flex-1" />
 
       {/* Profile Section */}
-      <div className="border-t border-gray-200 px-3 py-3">
+      <div className="border-t border-gray-200 px-3 py-8">
         <Link
           href="/profile"
           className="flex items-center gap-3 px-4 py-3 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
