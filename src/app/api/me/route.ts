@@ -27,6 +27,7 @@ export async function GET() {
     user: {
       id: user.id,
       username: user.username,
+      nickname: user.nickname,
       role: user.role,
       organizationId: user.organizationId,
       organizationName: user.organization?.name || null,

@@ -19,6 +19,7 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 export default function AccountEditModal({ isOpen, onClose, onSuccess, account }: AccountEditModalProps) {
+  const [nickname, setNickname] = useState('');
   const [password, setPassword] = useState('');
   const [memo, setMemo] = useState('');
   const [error, setError] = useState('');
@@ -26,6 +27,7 @@ export default function AccountEditModal({ isOpen, onClose, onSuccess, account }
 
   useEffect(() => {
     if (isOpen && account) {
+      setNickname(account.nickname || '');
       setPassword('');
       setMemo(account.memo || '');
       setError('');
@@ -42,7 +44,7 @@ export default function AccountEditModal({ isOpen, onClose, onSuccess, account }
       const res = await fetch(`/api/accounts/${account.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password, memo }),
+        body: JSON.stringify({ nickname, password, memo }),
       });
 
       const data = await res.json();
@@ -87,6 +89,20 @@ export default function AccountEditModal({ isOpen, onClose, onSuccess, account }
             value={account.username}
             readOnly
             className="w-full px-3 py-2 border border-gray-200 rounded bg-gray-100 text-gray-600"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            닉네임<span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+            placeholder="닉네임을 입력해주세요."
+            autoComplete="off"
+            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#4CAF50]"
           />
         </div>
 

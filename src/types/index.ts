@@ -15,6 +15,7 @@ export interface User {
   organizationId: number | null;
   organizationName?: string | null;
   username: string;
+  nickname: string;
   role: Role;
   memo: string | null;
   createdAt: string;
@@ -41,6 +42,7 @@ export interface Ad {
 export interface SessionPayload {
   id: number;
   username: string;
+  nickname: string;
   role: Role;
   organizationId: number | null;
 }

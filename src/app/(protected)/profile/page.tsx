@@ -14,6 +14,7 @@ const ROLE_LABELS: Record<Role, string> = {
 interface UserProfile {
   id: number;
   username: string;
+  nickname: string;
   role: Role;
   memo: string | null;
 }
@@ -21,6 +22,7 @@ interface UserProfile {
 export default function ProfilePage() {
   const { addToast } = useToast();
   const [user, setUser] = useState<UserProfile | null>(null);
+  const [nickname, setNickname] = useState('');
   const [password, setPassword] = useState('');
   const [memo, setMemo] = useState('');
   const [loading, setLoading] = useState(false);
@@ -31,6 +33,7 @@ export default function ProfilePage() {
       if (res.ok) {
         const data = await res.json();
         setUser(data.user);
+        setNickname(data.user.nickname || '');
         setMemo(data.user.memo || '');
       }
     }
@@ -42,9 +45,14 @@ export default function ProfilePage() {
 
     if (!user) return;
 
+    if (!nickname.trim()) {
+      addToast('닉네임을 입력해주세요.', 'error');
+      return;
+    }
+
     setLoading(true);
     try {
-      const body: { memo: string; password?: string } = { memo };
+      const body: { nickname: string; memo: string; password?: string } = { nickname, memo };
       if (password) {
         body.password = password;
       }
@@ -76,7 +84,7 @@ export default function ProfilePage() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-gray-900">프로필 정보 수정</h1>
-      <p className="text-sm text-gray-500 mt-1">비밀번호와 메모를 수정할 수 있습니다. 비밀번호는 변경 시에만 입력하세요.</p>
+      <p className="text-sm text-gray-500 mt-1">닉네임, 비밀번호, 메모를 수정할 수 있습니다. 비밀번호는 변경 시에만 입력하세요.</p>
 
       <form onSubmit={handleSubmit} className="mt-6 max-w-md space-y-5">
         <div>
@@ -88,6 +96,19 @@ export default function ProfilePage() {
             value={user.username}
             readOnly
             className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100 text-gray-500 cursor-not-allowed"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            닉네임<span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+            placeholder="닉네임을 입력해주세요."
+            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#4CAF50] focus:border-transparent"
           />
         </div>
 

@@ -39,12 +39,20 @@ export async function PATCH(
   }
 
   const body = await request.json();
-  const { password, memo } = body;
+  const { password, nickname, memo } = body;
 
-  const data: { password?: string; memo?: string } = {};
+  // nickname이 전달되었는데 빈 문자열이면 에러
+  if (nickname !== undefined && !nickname.trim()) {
+    return NextResponse.json({ error: '닉네임을 입력해주세요.' }, { status: 400 });
+  }
+
+  const data: { password?: string; nickname?: string; memo?: string } = {};
 
   if (password) {
     data.password = await bcrypt.hash(password, 10);
+  }
+  if (nickname !== undefined) {
+    data.nickname = nickname.trim();
   }
   if (memo !== undefined) {
     data.memo = memo;
@@ -60,6 +68,7 @@ export async function PATCH(
     account: {
       id: updated.id,
       username: updated.username,
+      nickname: updated.nickname,
       role: updated.role,
       organizationId: updated.organizationId,
       organizationName: updated.organization?.name || null,

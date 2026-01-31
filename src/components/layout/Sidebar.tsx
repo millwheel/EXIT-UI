@@ -8,7 +8,7 @@ import { getSidebarItems, getRedirectPath } from '@/lib/permissions';
 
 interface SidebarProps {
   role: Role;
-  username: string;
+  displayName: string;
 }
 
 function MenuIcon({ type }: { type: string }) {
@@ -49,7 +49,7 @@ function LogoutIcon() {
   );
 }
 
-export default function Sidebar({ role, username }: SidebarProps) {
+export default function Sidebar({ role, displayName }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const items = getSidebarItems(role);
@@ -113,7 +113,7 @@ export default function Sidebar({ role, username }: SidebarProps) {
           className="flex items-center gap-3 px-4 py-3 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
         >
           <ProfileIcon />
-          <span className="truncate max-w-[150px]">{username}</span>
+          <span className="truncate max-w-[150px]">{displayName}</span>
         </Link>
 
         {/* Logout Button */}

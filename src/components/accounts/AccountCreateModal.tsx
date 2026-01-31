@@ -21,6 +21,7 @@ const ROLE_LABELS: Record<string, string> = {
 
 export default function AccountCreateModal({ isOpen, onClose, onSuccess, currentRole }: AccountCreateModalProps) {
   const [username, setUsername] = useState('');
+  const [nickname, setNickname] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<string>('');
   const [organizationId, setOrganizationId] = useState<number | null>(null);
@@ -37,6 +38,7 @@ export default function AccountCreateModal({ isOpen, onClose, onSuccess, current
     if (isOpen) {
       const roles = getCreateableRoles(currentRole);
       setUsername('');
+      setNickname('');
       setPassword('');
       setRole(roles[0] || '');
       setOrganizationId(null);
@@ -60,6 +62,7 @@ export default function AccountCreateModal({ isOpen, onClose, onSuccess, current
     try {
       const body: Record<string, unknown> = {
         username,
+        nickname,
         password,
         role,
         memo: memo || undefined,
@@ -119,6 +122,20 @@ export default function AccountCreateModal({ isOpen, onClose, onSuccess, current
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             placeholder="이름을 입력해주세요."
+            autoComplete="off"
+            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#4CAF50]"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            닉네임<span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+            placeholder="닉네임을 입력해주세요."
             autoComplete="off"
             className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#4CAF50]"
           />

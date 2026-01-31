@@ -21,6 +21,7 @@ model User {
   organizationId Int?
   organization   Organization? @relation(fields: [organizationId], references: [id])
   username       String        @unique
+  nickname       String?
   password       String
   role           String        // MASTER, AGENCY, ADVERTISER
   memo           String?

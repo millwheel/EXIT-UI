@@ -40,6 +40,7 @@ export async function GET(request: NextRequest) {
   const accounts = users.map((u) => ({
     id: u.id,
     username: u.username,
+    nickname: u.nickname,
     role: u.role,
     organizationId: u.organizationId,
     organizationName: u.organization?.name || null,
@@ -85,9 +86,9 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { username, password, role, organizationId, organizationName, memo } = body;
+  const { username, password, role, organizationId, organizationName, nickname, memo } = body;
 
-  if (!username || !password || !role) {
+  if (!username || !nickname?.trim() || !password || !role) {
     return NextResponse.json({ error: '필수 항목을 입력해주세요.' }, { status: 400 });
   }
 
@@ -134,6 +135,7 @@ export async function POST(request: NextRequest) {
       password: hashedPassword,
       role,
       organizationId: assignedOrgId,
+      nickname: nickname.trim(),
       memo: memo || null,
     },
     include: { organization: true },
@@ -143,6 +145,7 @@ export async function POST(request: NextRequest) {
     account: {
       id: user.id,
       username: user.username,
+      nickname: user.nickname,
       role: user.role,
       organizationId: user.organizationId,
       organizationName: assignedOrgName || user.organization?.name || null,
