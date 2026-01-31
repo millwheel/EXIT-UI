@@ -13,12 +13,16 @@ export default function NoticesPage() {
   const [notices, setNotices] = useState<Notice[]>([]);
   const [currentRole, setCurrentRole] = useState<Role | null>(null);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const fetchNotices = useCallback(async () => {
-    const res = await fetch('/api/notices');
+  const fetchNotices = useCallback(async (page = 1) => {
+    const res = await fetch(`/api/notices?page=${page}`);
     if (res.ok) {
       const data = await res.json();
       setNotices(data.notices);
+      setCurrentPage(data.pagination.page);
+      setTotalPages(data.pagination.totalPages);
     } else if (res.status === 403) {
       router.push('/ads');
     }
@@ -67,7 +71,14 @@ export default function NoticesPage() {
 
       <NoticeTable notices={notices} />
 
-      <Pagination />
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={(page) => {
+          setCurrentPage(page);
+          fetchNotices(page);
+        }}
+      />
     </div>
   );
 }
