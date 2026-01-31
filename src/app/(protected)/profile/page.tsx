@@ -93,75 +93,85 @@ export default function ProfilePage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900">프로필 정보 수정</h1>
-      <p className="text-sm text-gray-500 mt-1">닉네임, 비밀번호, 메모를 수정할 수 있습니다.</p>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">프로필 정보 수정</h1>
+        <p className="text-sm text-gray-500 mt-1">
+          닉네임, 비밀번호, 메모를 수정할 수 있습니다.
+        </p>
+      </div>
 
-      <form onSubmit={handleSubmit} className="mt-6 max-w-md space-y-5">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            아이디<span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            value={user.username}
-            readOnly
-            className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100 text-gray-500 cursor-not-allowed"
-          />
-        </div>
+      <div className="flex justify-center">
+        <div className="w-full max-w-md bg-white border border-gray-200 rounded-lg shadow-sm p-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                아이디
+              </label>
+              <input
+                type="text"
+                value={user.username}
+                readOnly
+                className="w-full px-3 py-2 border border-gray-200 rounded bg-gray-50 text-gray-500 cursor-not-allowed"
+              />
+            </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            닉네임<span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
-            placeholder="닉네임을 입력해주세요."
-            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#4CAF50] focus:border-transparent"
-          />
-        </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                권한
+              </label>
+              <input
+                type="text"
+                value={ROLE_LABELS[user.role]}
+                readOnly
+                className="w-full px-3 py-2 border border-gray-200 rounded bg-gray-50 text-gray-500 cursor-not-allowed"
+              />
+            </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            비밀번호
-          </label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="변경 시에만 입력"
-            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#4CAF50] focus:border-transparent"
-          />
-        </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                닉네임<span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={nickname}
+                onChange={(e) => setNickname(e.target.value)}
+                placeholder="닉네임을 입력해주세요."
+                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#4CAF50] focus:border-transparent"
+              />
+            </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">권한</label>
-          <input
-            type="text"
-            value={ROLE_LABELS[user.role]}
-            readOnly
-            className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100 text-gray-500 cursor-not-allowed"
-          />
-        </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                비밀번호
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="변경 시에만 입력 (8자 이상)"
+                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#4CAF50] focus:border-transparent"
+              />
+            </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">메모</label>
-          <textarea
-            value={memo}
-            onChange={(e) => setMemo(e.target.value)}
-            rows={3}
-            placeholder="메모를 입력해주세요."
-            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#4CAF50] focus:border-transparent resize-none"
-          />
-        </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">메모</label>
+              <textarea
+                value={memo}
+                onChange={(e) => setMemo(e.target.value)}
+                rows={3}
+                placeholder="메모를 입력해주세요."
+                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#4CAF50] focus:border-transparent resize-none"
+              />
+            </div>
 
-        <div className="pt-2">
-          <Button type="submit" disabled={loading}>
-            {loading ? '수정 중...' : '수정'}
-          </Button>
+            <div className="pt-2 flex justify-center">
+              <Button type="submit" disabled={loading} className="w-full">
+                {loading ? '수정 중...' : '수정'}
+              </Button>
+            </div>
+          </form>
         </div>
-      </form>
+      </div>
     </div>
   );
 }

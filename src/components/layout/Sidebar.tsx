@@ -3,12 +3,36 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
+import { ReactNode } from 'react';
 import { Role } from '@/types';
 import { getSidebarItems, getRedirectPath } from '@/lib/permissions';
 
 interface SidebarProps {
   role: Role;
   displayName: string;
+}
+
+interface NavLinkProps {
+  href: string;
+  children: ReactNode;
+  pathname: string;
+  className?: string;
+}
+
+function NavLink({ href, children, pathname, className = '' }: NavLinkProps) {
+  const isActive = pathname === href;
+  return (
+    <Link
+      href={href}
+      className={`flex items-center gap-3 px-4 py-3 text-sm rounded-lg transition-colors ${
+        isActive
+          ? 'bg-[var(--primary)] text-white font-semibold'
+          : 'text-gray-600 hover:bg-gray-100'
+      } ${className}`}
+    >
+      {children}
+    </Link>
+  );
 }
 
 function MenuIcon({ type }: { type: string }) {
@@ -83,38 +107,24 @@ export default function Sidebar({ role, displayName }: SidebarProps) {
       </div>
 
       {/* Navigation Menu */}
-      <nav className="flex-1 px-3">
-        {items.map((item) => {
-          const isActive = pathname === item.href;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex items-center gap-3 px-4 py-3 mb-1 text-sm transition-colors rounded-lg ${
-                isActive
-                  ? 'bg-[var(--primary)] text-white font-semibold'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              <MenuIcon type={item.icon} />
-              {item.label}
-            </Link>
-          );
-        })}
+      <nav className="flex flex-col px-3 gap-1">
+        {items.map((item) => (
+          <NavLink key={item.href} href={item.href} pathname={pathname}>
+            <MenuIcon type={item.icon} />
+            {item.label}
+          </NavLink>
+        ))}
       </nav>
 
       {/* Spacer to push profile/logout to bottom */}
       <div className="flex-1" />
 
       {/* Profile Section */}
-      <div className="border-t border-gray-200 px-3 py-8">
-        <Link
-          href="/profile"
-          className="flex items-center gap-3 px-4 py-3 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-        >
+      <div className="border-t border-gray-200 px-3 py-8 flex flex-col px-3 gap-1">
+        <NavLink href="/profile" pathname={pathname}>
           <ProfileIcon />
           <span className="truncate max-w-[150px]">{displayName}</span>
-        </Link>
+        </NavLink>
 
         {/* Logout Button */}
         <button
