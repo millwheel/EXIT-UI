@@ -94,7 +94,7 @@ export default function ProfilePage() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-gray-900">프로필 정보 수정</h1>
-      <p className="text-sm text-gray-500 mt-1">닉네임, 비밀번호, 메모를 수정할 수 있습니다. 비밀번호는 변경 시에만 입력하세요.</p>
+      <p className="text-sm text-gray-500 mt-1">닉네임, 비밀번호, 메모를 수정할 수 있습니다.</p>
 
       <form onSubmit={handleSubmit} className="mt-6 max-w-md space-y-5">
         <div>
@@ -130,7 +130,7 @@ export default function ProfilePage() {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="변경 시에만 입력하세요."
+            placeholder="변경 시에만 입력"
             className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#4CAF50] focus:border-transparent"
           />
         </div>
