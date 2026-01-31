@@ -68,14 +68,12 @@ export default function AdCreatePage() {
       }
 
       // 광고주 목록 조회
-      const params = meData.user?.role === 'MASTER' ? '' : '?role=ADVERTISER';
-      const res = await fetch(`/api/accounts${params}`);
+      const res = await fetch('/api/accounts?role=ADVERTISER');
       const data = await res.json();
       if (data.accounts) {
-        const advs = data.accounts.filter((a: { role: string }) => a.role === 'ADVERTISER');
-        setAdvertisers(advs);
-        if (advs.length > 0) {
-          setAdvertiserId(advs[0].id);
+        setAdvertisers(data.accounts);
+        if (data.accounts.length > 0) {
+          setAdvertiserId(data.accounts[0].id);
         }
       }
     }
