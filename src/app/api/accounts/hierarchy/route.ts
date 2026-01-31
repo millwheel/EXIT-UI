@@ -41,8 +41,8 @@ export async function GET(request: NextRequest) {
     let organizations: Array<{
       id: number;
       name: string;
-      agencies: Array<{ id: number; nickname: string | null; username: string; memo: string | null }>;
-      advertisers: Array<{ id: number; nickname: string | null; username: string; memo: string | null }>;
+      agencies: Array<{ id: number; nickname: string | null; username: string; memo: string | null; role: string }>;
+      advertisers: Array<{ id: number; nickname: string | null; username: string; memo: string | null; role: string }>;
     }> = [];
 
     if (masterId) {
@@ -62,10 +62,10 @@ export async function GET(request: NextRequest) {
         name: org.name,
         agencies: org.users
           .filter((u) => u.role === 'AGENCY')
-          .map((u) => ({ id: u.id, nickname: u.nickname, username: u.username, memo: u.memo })),
+          .map((u) => ({ id: u.id, nickname: u.nickname, username: u.username, memo: u.memo, role: u.role })),
         advertisers: org.users
           .filter((u) => u.role === 'ADVERTISER')
-          .map((u) => ({ id: u.id, nickname: u.nickname, username: u.username, memo: u.memo })),
+          .map((u) => ({ id: u.id, nickname: u.nickname, username: u.username, memo: u.memo, role: u.role })),
       }));
     }
 
@@ -91,10 +91,10 @@ export async function GET(request: NextRequest) {
             master: org.master,
             agencies: org.users
               .filter((u) => u.role === 'AGENCY')
-              .map((u) => ({ id: u.id, nickname: u.nickname, username: u.username, memo: u.memo })),
+              .map((u) => ({ id: u.id, nickname: u.nickname, username: u.username, memo: u.memo, role: u.role })),
             advertisers: org.users
               .filter((u) => u.role === 'ADVERTISER')
-              .map((u) => ({ id: u.id, nickname: u.nickname, username: u.username, memo: u.memo })),
+              .map((u) => ({ id: u.id, nickname: u.nickname, username: u.username, memo: u.memo, role: u.role })),
           },
         });
       }
@@ -127,10 +127,10 @@ export async function GET(request: NextRequest) {
         master: org.master,
         agencies: org.users
           .filter((u) => u.role === 'AGENCY')
-          .map((u) => ({ id: u.id, nickname: u.nickname, username: u.username, memo: u.memo })),
+          .map((u) => ({ id: u.id, nickname: u.nickname, username: u.username, memo: u.memo, role: u.role })),
         advertisers: org.users
           .filter((u) => u.role === 'ADVERTISER')
-          .map((u) => ({ id: u.id, nickname: u.nickname, username: u.username, memo: u.memo })),
+          .map((u) => ({ id: u.id, nickname: u.nickname, username: u.username, memo: u.memo, role: u.role })),
       },
     });
   }
@@ -165,10 +165,10 @@ export async function GET(request: NextRequest) {
         master: org.master,
         agencies: org.users
           .filter((u) => u.role === 'AGENCY')
-          .map((u) => ({ id: u.id, nickname: u.nickname, username: u.username, memo: u.memo })),
+          .map((u) => ({ id: u.id, nickname: u.nickname, username: u.username, memo: u.memo, role: u.role })),
         advertisers: org.users
           .filter((u) => u.role === 'ADVERTISER')
-          .map((u) => ({ id: u.id, nickname: u.nickname, username: u.username, memo: u.memo })),
+          .map((u) => ({ id: u.id, nickname: u.nickname, username: u.username, memo: u.memo, role: u.role })),
       },
     });
   }
