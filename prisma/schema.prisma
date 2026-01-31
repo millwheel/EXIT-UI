@@ -11,22 +11,25 @@ datasource db {
 model Organization {
   id        Int      @id @default(autoincrement())
   name      String   @unique
+  masterId  Int?     // 이 조직을 관리하는 총판 (MASTER)
+  master    User?    @relation("ManagedOrganizations", fields: [masterId], references: [id])
   createdAt DateTime @default(now())
-  users     User[]
+  users     User[]   @relation("BelongsToOrganization")
   ads       Ad[]
 }
 
 model User {
-  id             Int           @id @default(autoincrement())
-  organizationId Int?
-  organization   Organization? @relation(fields: [organizationId], references: [id])
-  username       String        @unique
-  nickname       String?
-  password       String
-  role           String        // MASTER, AGENCY, ADVERTISER
-  memo           String?
-  createdAt      DateTime      @default(now())
-  ads            Ad[]          @relation("AdvertiserAds")
+  id                   Int            @id @default(autoincrement())
+  organizationId       Int?
+  organization         Organization?  @relation("BelongsToOrganization", fields: [organizationId], references: [id])
+  managedOrganizations Organization[] @relation("ManagedOrganizations") // MASTER가 관리하는 조직들
+  username             String         @unique
+  nickname             String?
+  password             String
+  role                 String         // MASTER, AGENCY, ADVERTISER
+  memo                 String?
+  createdAt            DateTime       @default(now())
+  ads                  Ad[]           @relation("AdvertiserAds")
 }
 
 model Ad {

@@ -122,9 +122,9 @@ export async function POST(request: NextRequest) {
     assignedOrgId = session.organizationId;
   } else if (currentRole === 'MASTER') {
     if (organizationName) {
-      // Create new organization
+      // Create new organization with current MASTER as owner
       const newOrg = await prisma.organization.create({
-        data: { name: organizationName },
+        data: { name: organizationName, masterId: session.id },
       });
       assignedOrgId = newOrg.id;
       assignedOrgName = newOrg.name;

@@ -25,7 +25,7 @@ export function canCreateAccounts(role: Role): boolean {
 }
 
 export function getCreateableRoles(role: Role): Role[] {
-  if (role === 'MASTER') return ['AGENCY', 'ADVERTISER'];
+  if (role === 'MASTER') return ['MASTER', 'AGENCY', 'ADVERTISER'];
   if (role === 'AGENCY') return ['ADVERTISER'];
   return [];
 }

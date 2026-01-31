@@ -1,155 +1,22 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { User, Role, AccountStats } from '@/types';
-import StatsCard from '@/components/ui/StatsCard';
-import Pagination from '@/components/ui/Pagination';
-import Button from '@/components/ui/Button';
-import AccountTable from '@/components/accounts/AccountTable';
-import AccountCreateModal from '@/components/accounts/AccountCreateModal';
-import AccountEditModal from '@/components/accounts/AccountEditModal';
-import { useToast } from '@/hooks/useToast';
+import { useState, useEffect } from 'react';
+import { Role } from '@/types';
+import AccountHierarchy from '@/components/accounts/AccountHierarchy';
 
 export default function AccountsPage() {
-  const { addToast } = useToast();
-  const [accounts, setAccounts] = useState<User[]>([]);
-  const [stats, setStats] = useState<AccountStats>({ total: 0, master: 0, agency: 0, advertiser: 0 });
-  const [selectedIds, setSelectedIds] = useState<number[]>([]);
-  const [selectedStatIndex, setSelectedStatIndex] = useState<number>(0);
   const [currentRole, setCurrentRole] = useState<Role>('MASTER');
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [editAccount, setEditAccount] = useState<User | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-
-  const fetchAccounts = useCallback(async (roleFilter?: string | null, page = 1) => {
-    const params = new URLSearchParams();
-    if (roleFilter) params.set('role', roleFilter);
-    params.set('page', page.toString());
-    const query = `?${params.toString()}`;
-
-    const res = await fetch(`/api/accounts${query}`);
-    if (res.ok) {
-      const data = await res.json();
-      setAccounts(data.accounts);
-      setStats(data.stats);
-      setCurrentPage(data.pagination.page);
-      setTotalPages(data.pagination.totalPages);
-    }
-  }, []);
 
   useEffect(() => {
     async function init() {
       const meRes = await fetch('/api/me');
       const meData = await meRes.json();
       if (meData.user) {
-        const role = meData.user.role as Role;
-        setCurrentRole(role);
-        // AGENCY는 광고주만, ADVERTISER는 대행사만 볼 수 있음
-        if (role === 'AGENCY') {
-          await fetchAccounts('ADVERTISER');
-        } else if (role === 'ADVERTISER') {
-          await fetchAccounts('AGENCY');
-        } else {
-          await fetchAccounts();
-        }
+        setCurrentRole(meData.user.role as Role);
       }
     }
     init();
-  }, [fetchAccounts]);
-
-  function handleStatSelect(index: number) {
-    setSelectedStatIndex(index);
-    setSelectedIds([]);
-    setCurrentPage(1);
-    // AGENCY는 항상 ADVERTISER 필터, ADVERTISER는 항상 AGENCY 필터 적용
-    if (currentRole === 'AGENCY') {
-      fetchAccounts('ADVERTISER', 1);
-    } else if (currentRole === 'ADVERTISER') {
-      fetchAccounts('AGENCY', 1);
-    } else {
-      const roleFilters: (string | null)[] = [null, 'MASTER', 'AGENCY', 'ADVERTISER'];
-      fetchAccounts(roleFilters[index], 1);
-    }
-  }
-
-  function handlePageChange(page: number) {
-    setCurrentPage(page);
-    setSelectedIds([]);
-    if (currentRole === 'AGENCY') {
-      fetchAccounts('ADVERTISER', page);
-    } else if (currentRole === 'ADVERTISER') {
-      fetchAccounts('AGENCY', page);
-    } else {
-      const roleFilters: (string | null)[] = [null, 'MASTER', 'AGENCY', 'ADVERTISER'];
-      fetchAccounts(roleFilters[selectedStatIndex], page);
-    }
-  }
-
-  async function handleDelete() {
-    if (selectedIds.length === 0) {
-      addToast('삭제할 계정을 선택해주세요.', 'error');
-      return;
-    }
-
-    const res = await fetch('/api/accounts', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ids: selectedIds }),
-    });
-
-    const data = await res.json();
-
-    if (res.ok) {
-      addToast(`${data.deletedCount}개 계정이 삭제되었습니다.`, 'success');
-      setSelectedIds([]);
-      setSelectedStatIndex(0);
-      setCurrentPage(1);
-      if (currentRole === 'AGENCY') {
-        fetchAccounts('ADVERTISER', 1);
-      } else {
-        fetchAccounts(null, 1);
-      }
-    } else {
-      addToast(data.error, 'error');
-    }
-  }
-
-  function handleCreateSuccess() {
-    addToast('계정이 등록되었습니다.', 'success');
-    setSelectedStatIndex(0);
-    setCurrentPage(1);
-    if (currentRole === 'AGENCY') {
-      fetchAccounts('ADVERTISER', 1);
-    } else {
-      fetchAccounts(null, 1);
-    }
-  }
-
-  function handleEditSuccess() {
-    addToast('계정이 수정되었습니다.', 'success');
-    if (currentRole === 'AGENCY') {
-      fetchAccounts('ADVERTISER', currentPage);
-    } else {
-      const roleFilters: (string | null)[] = [null, 'MASTER', 'AGENCY', 'ADVERTISER'];
-      fetchAccounts(roleFilters[selectedStatIndex], currentPage);
-    }
-  }
-
-  // 역할별 표시 항목
-  const statsItems = currentRole === 'AGENCY'
-    ? [{ label: '광고주', value: stats.advertiser }]
-    : currentRole === 'ADVERTISER'
-    ? [{ label: '대행사', value: stats.agency }]
-    : [
-        { label: '전체', value: stats.total },
-        { label: '총판사', value: stats.master },
-        { label: '대행사', value: stats.agency },
-        { label: '광고주', value: stats.advertiser },
-      ];
-
-  // ADVERTISER는 등록/수정/삭제 불가
-  const canManage = currentRole === 'MASTER' || currentRole === 'AGENCY';
+  }, []);
 
   return (
     <div>
@@ -160,54 +27,7 @@ export default function AccountsPage() {
         </p>
       </div>
 
-      <div className="mb-6">
-        <StatsCard
-          title="계정 현황"
-          items={statsItems}
-          selectedIndex={selectedStatIndex}
-          onSelect={handleStatSelect}
-        />
-      </div>
-
-      {canManage && (
-        <div className="flex justify-end gap-2 mb-3">
-          <Button variant="outline" onClick={handleDelete}>삭제</Button>
-          <Button onClick={() => setIsCreateOpen(true)}>등록</Button>
-        </div>
-      )}
-
-      <AccountTable
-        accounts={accounts}
-        selectedIds={selectedIds}
-        onSelectionChange={setSelectedIds}
-        onEdit={(account) => setEditAccount(account)}
-        showCheckbox={canManage}
-        showEdit={canManage}
-      />
-
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-      />
-
-      {canManage && (
-        <>
-          <AccountCreateModal
-            isOpen={isCreateOpen}
-            onClose={() => setIsCreateOpen(false)}
-            onSuccess={handleCreateSuccess}
-            currentRole={currentRole}
-          />
-
-          <AccountEditModal
-            isOpen={!!editAccount}
-            onClose={() => setEditAccount(null)}
-            onSuccess={handleEditSuccess}
-            account={editAccount}
-          />
-        </>
-      )}
+      <AccountHierarchy currentRole={currentRole} />
     </div>
   );
 }

@@ -4,6 +4,60 @@ import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { Role } from '@/types';
 
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await getSession();
+  if (!session) {
+    return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
+  }
+
+  const { id } = await params;
+  const targetId = parseInt(id, 10);
+
+  const user = await prisma.user.findUnique({
+    where: { id: targetId },
+    select: {
+      id: true,
+      username: true,
+      nickname: true,
+      memo: true,
+      role: true,
+      organizationId: true,
+    },
+  });
+
+  if (!user) {
+    return NextResponse.json({ error: '계정을 찾을 수 없습니다.' }, { status: 404 });
+  }
+
+  // 권한 체크: 같은 조직이거나 MASTER만 조회 가능
+  const currentRole = session.role as Role;
+  if (currentRole === 'ADVERTISER') {
+    // ADVERTISER는 같은 조직의 AGENCY 또는 자기 자신만 조회 가능
+    if (user.id !== session.id &&
+        !(user.organizationId === session.organizationId && user.role === 'AGENCY')) {
+      return NextResponse.json({ error: '조회 권한이 없습니다.' }, { status: 403 });
+    }
+  } else if (currentRole === 'AGENCY') {
+    // AGENCY는 같은 조직의 계정만 조회 가능
+    if (user.organizationId !== session.organizationId) {
+      return NextResponse.json({ error: '조회 권한이 없습니다.' }, { status: 403 });
+    }
+  }
+  // MASTER는 모든 계정 조회 가능
+
+  return NextResponse.json({
+    account: {
+      id: user.id,
+      username: user.username,
+      nickname: user.nickname,
+      memo: user.memo,
+    },
+  });
+}
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
