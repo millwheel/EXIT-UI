@@ -19,14 +19,22 @@ export default function AccountsPage() {
   const [currentRole, setCurrentRole] = useState<Role>('MASTER');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editAccount, setEditAccount] = useState<User | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const fetchAccounts = useCallback(async (roleFilter?: string | null) => {
-    const params = roleFilter ? `?role=${roleFilter}` : '';
-    const res = await fetch(`/api/accounts${params}`);
+  const fetchAccounts = useCallback(async (roleFilter?: string | null, page = 1) => {
+    const params = new URLSearchParams();
+    if (roleFilter) params.set('role', roleFilter);
+    params.set('page', page.toString());
+    const query = `?${params.toString()}`;
+
+    const res = await fetch(`/api/accounts${query}`);
     if (res.ok) {
       const data = await res.json();
       setAccounts(data.accounts);
       setStats(data.stats);
+      setCurrentPage(data.pagination.page);
+      setTotalPages(data.pagination.totalPages);
     }
   }, []);
 
@@ -53,14 +61,28 @@ export default function AccountsPage() {
   function handleStatSelect(index: number) {
     setSelectedStatIndex(index);
     setSelectedIds([]);
+    setCurrentPage(1);
     // AGENCY는 항상 ADVERTISER 필터, ADVERTISER는 항상 AGENCY 필터 적용
     if (currentRole === 'AGENCY') {
-      fetchAccounts('ADVERTISER');
+      fetchAccounts('ADVERTISER', 1);
     } else if (currentRole === 'ADVERTISER') {
-      fetchAccounts('AGENCY');
+      fetchAccounts('AGENCY', 1);
     } else {
       const roleFilters: (string | null)[] = [null, 'MASTER', 'AGENCY', 'ADVERTISER'];
-      fetchAccounts(roleFilters[index]);
+      fetchAccounts(roleFilters[index], 1);
+    }
+  }
+
+  function handlePageChange(page: number) {
+    setCurrentPage(page);
+    setSelectedIds([]);
+    if (currentRole === 'AGENCY') {
+      fetchAccounts('ADVERTISER', page);
+    } else if (currentRole === 'ADVERTISER') {
+      fetchAccounts('AGENCY', page);
+    } else {
+      const roleFilters: (string | null)[] = [null, 'MASTER', 'AGENCY', 'ADVERTISER'];
+      fetchAccounts(roleFilters[selectedStatIndex], page);
     }
   }
 
@@ -82,10 +104,11 @@ export default function AccountsPage() {
       addToast(`${data.deletedCount}개 계정이 삭제되었습니다.`, 'success');
       setSelectedIds([]);
       setSelectedStatIndex(0);
+      setCurrentPage(1);
       if (currentRole === 'AGENCY') {
-        fetchAccounts('ADVERTISER');
+        fetchAccounts('ADVERTISER', 1);
       } else {
-        fetchAccounts();
+        fetchAccounts(null, 1);
       }
     } else {
       addToast(data.error, 'error');
@@ -95,20 +118,21 @@ export default function AccountsPage() {
   function handleCreateSuccess() {
     addToast('계정이 등록되었습니다.', 'success');
     setSelectedStatIndex(0);
+    setCurrentPage(1);
     if (currentRole === 'AGENCY') {
-      fetchAccounts('ADVERTISER');
+      fetchAccounts('ADVERTISER', 1);
     } else {
-      fetchAccounts();
+      fetchAccounts(null, 1);
     }
   }
 
   function handleEditSuccess() {
     addToast('계정이 수정되었습니다.', 'success');
     if (currentRole === 'AGENCY') {
-      fetchAccounts('ADVERTISER');
+      fetchAccounts('ADVERTISER', currentPage);
     } else {
       const roleFilters: (string | null)[] = [null, 'MASTER', 'AGENCY', 'ADVERTISER'];
-      fetchAccounts(roleFilters[selectedStatIndex]);
+      fetchAccounts(roleFilters[selectedStatIndex], currentPage);
     }
   }
 
@@ -161,7 +185,11 @@ export default function AccountsPage() {
         showEdit={canManage}
       />
 
-      <Pagination />
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+      />
 
       {canManage && (
         <>

@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { Role } from '@/types';
 
+const PAGE_SIZE = 10;
+
 export async function GET(request: NextRequest) {
   const session = await getSession();
   if (!session) {
@@ -14,6 +16,7 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url);
   const roleFilter = searchParams.get('role');
+  const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
 
   let where: Record<string, unknown> = {};
 
@@ -28,6 +31,30 @@ export async function GET(request: NextRequest) {
     where = { ...where, role: roleFilter };
   }
 
+  // Calculate stats based on the unfiltered dataset for the user's scope
+  let statsWhere: Record<string, unknown> = {};
+  if (role === 'ADVERTISER') {
+    statsWhere = { organizationId: session.organizationId, role: 'AGENCY' };
+  } else if (role === 'AGENCY') {
+    statsWhere = { organizationId: session.organizationId, role: 'ADVERTISER' };
+  }
+
+  const allUsersForStats = await prisma.user.findMany({
+    where: statsWhere,
+    select: { role: true },
+  });
+
+  const stats = {
+    total: allUsersForStats.length,
+    master: allUsersForStats.filter((u) => u.role === 'MASTER').length,
+    agency: allUsersForStats.filter((u) => u.role === 'AGENCY').length,
+    advertiser: allUsersForStats.filter((u) => u.role === 'ADVERTISER').length,
+  };
+
+  // 전체 개수 조회
+  const totalCount = await prisma.user.count({ where });
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+
   const users = await prisma.user.findMany({
     where,
     include: {
@@ -35,6 +62,8 @@ export async function GET(request: NextRequest) {
       _count: { select: { ads: true } },
     },
     orderBy: { id: 'desc' },
+    skip: (page - 1) * PAGE_SIZE,
+    take: PAGE_SIZE,
   });
 
   const accounts = users.map((u) => ({
@@ -49,28 +78,7 @@ export async function GET(request: NextRequest) {
     adCount: u._count.ads,
   }));
 
-  // Calculate stats based on the unfiltered dataset for the user's scope
-  let statsWhere: Record<string, unknown> = {};
-  if (role === 'ADVERTISER') {
-    statsWhere = { organizationId: session.organizationId, role: 'AGENCY' };
-  } else if (role === 'AGENCY') {
-    statsWhere = { organizationId: session.organizationId, role: 'ADVERTISER' };
-  }
-
-  const allUsers = roleFilter
-    ? await prisma.user.findMany({ where: statsWhere })
-    : users;
-
-  const statsSource = roleFilter ? allUsers : users;
-
-  const stats = {
-    total: statsSource.length,
-    master: statsSource.filter((u) => u.role === 'MASTER').length,
-    agency: statsSource.filter((u) => u.role === 'AGENCY').length,
-    advertiser: statsSource.filter((u) => u.role === 'ADVERTISER').length,
-  };
-
-  return NextResponse.json({ accounts, stats });
+  return NextResponse.json({ accounts, stats, pagination: { page, totalPages, totalCount } });
 }
 
 export async function POST(request: NextRequest) {

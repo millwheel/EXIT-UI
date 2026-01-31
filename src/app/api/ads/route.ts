@@ -22,6 +22,8 @@ function computeStats(ads: { kind: string; status: string }[]) {
   };
 }
 
+const PAGE_SIZE = 10;
+
 export async function GET(request: NextRequest) {
   const session = await getSession();
   if (!session) {
@@ -32,6 +34,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const statusFilter = searchParams.get('status');
   const kindFilter = searchParams.get('kind');
+  const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
 
   // Base where clause based on role
   let baseWhere: Record<string, unknown> = {};
@@ -61,12 +64,18 @@ export async function GET(request: NextRequest) {
     filterWhere.kind = kindFilter;
   }
 
+  // 전체 개수 조회
+  const totalCount = await prisma.ad.count({ where: filterWhere });
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+
   const ads = await prisma.ad.findMany({
     where: filterWhere,
     include: {
       advertiser: { select: { username: true } },
     },
     orderBy: { id: 'desc' },
+    skip: (page - 1) * PAGE_SIZE,
+    take: PAGE_SIZE,
   });
 
   const formattedAds = ads.map((ad) => ({
@@ -86,7 +95,7 @@ export async function GET(request: NextRequest) {
     updatedAt: ad.updatedAt.toISOString(),
   }));
 
-  return NextResponse.json({ ads: formattedAds, stats });
+  return NextResponse.json({ ads: formattedAds, stats, pagination: { page, totalPages, totalCount } });
 }
 
 interface AdInput {
@@ -194,7 +203,8 @@ export async function DELETE(request: NextRequest) {
 
   const role = session.role as Role;
 
-  if (role === 'ADVERTISER') {
+  // MASTER만 삭제 가능
+  if (role !== 'MASTER') {
     return NextResponse.json({ error: '삭제 권한이 없습니다.' }, { status: 403 });
   }
 
@@ -204,11 +214,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: '삭제할 광고를 선택해주세요.' }, { status: 400 });
   }
 
-  let where: Record<string, unknown> = { id: { in: ids } };
-
-  if (role === 'AGENCY') {
-    where = { ...where, organizationId: session.organizationId };
-  }
+  const where: Record<string, unknown> = { id: { in: ids } };
 
   const result = await prisma.ad.deleteMany({ where });
 

@@ -25,18 +25,23 @@ export default function AdsPage() {
   const [selectedFilter, setSelectedFilter] = useState<{ kind: string | null; status: string | null } | null>(null);
   const [currentRole, setCurrentRole] = useState<Role>('ADVERTISER');
   const [editAd, setEditAd] = useState<Ad | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const fetchAds = useCallback(async (filter?: { kind: string | null; status: string | null } | null) => {
+  const fetchAds = useCallback(async (filter?: { kind: string | null; status: string | null } | null, page = 1) => {
     const params = new URLSearchParams();
     if (filter?.status) params.set('status', filter.status);
     if (filter?.kind) params.set('kind', filter.kind);
-    const query = params.toString() ? `?${params.toString()}` : '';
+    params.set('page', page.toString());
+    const query = `?${params.toString()}`;
 
     const res = await fetch(`/api/ads${query}`);
     if (res.ok) {
       const data = await res.json();
       setAds(data.ads);
       setStats(data.stats);
+      setCurrentPage(data.pagination.page);
+      setTotalPages(data.pagination.totalPages);
     }
   }, []);
 
@@ -55,7 +60,14 @@ export default function AdsPage() {
   function handleFilterChange(filter: { kind: string | null; status: string | null } | null) {
     setSelectedFilter(filter);
     setSelectedIds([]);
-    fetchAds(filter);
+    setCurrentPage(1);
+    fetchAds(filter, 1);
+  }
+
+  function handlePageChange(page: number) {
+    setCurrentPage(page);
+    setSelectedIds([]);
+    fetchAds(selectedFilter, page);
   }
 
   async function handleDelete() {
@@ -76,7 +88,8 @@ export default function AdsPage() {
       addToast(`${data.deletedCount}개 광고가 삭제되었습니다.`, 'success');
       setSelectedIds([]);
       setSelectedFilter(null);
-      fetchAds();
+      setCurrentPage(1);
+      fetchAds(null, 1);
     } else {
       addToast(data.error, 'error');
     }
@@ -84,10 +97,11 @@ export default function AdsPage() {
 
   function handleEditSuccess() {
     addToast('광고가 수정되었습니다.', 'success');
-    fetchAds(selectedFilter);
+    fetchAds(selectedFilter, currentPage);
   }
 
-  const canManage = currentRole === 'MASTER' || currentRole === 'AGENCY';
+  const canCreate = currentRole === 'MASTER' || currentRole === 'AGENCY';
+  const canDelete = currentRole === 'MASTER';
 
   return (
     <div>
@@ -106,10 +120,10 @@ export default function AdsPage() {
         />
       </div>
 
-      {canManage && (
+      {(canCreate || canDelete) && (
         <div className="flex justify-end gap-2 mb-3">
-          <Button variant="outline" onClick={handleDelete}>삭제</Button>
-          <Button onClick={() => router.push('/ads/create')}>등록</Button>
+          {canDelete && <Button variant="outline" onClick={handleDelete}>삭제</Button>}
+          {canCreate && <Button onClick={() => router.push('/ads/create')}>등록</Button>}
         </div>
       )}
 
@@ -118,10 +132,14 @@ export default function AdsPage() {
         selectedIds={selectedIds}
         onSelectionChange={setSelectedIds}
         onEdit={(ad) => setEditAd(ad)}
-        showCheckbox={canManage}
+        showCheckbox={canDelete}
       />
 
-      <Pagination />
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+      />
 
       <AdEditModal
         isOpen={!!editAd}
