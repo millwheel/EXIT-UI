@@ -51,6 +51,7 @@ export async function GET(
     content: notice.content,
     viewCount: notice.viewCount,
     createdAt: notice.createdAt.toISOString(),
+    updatedAt: notice.updatedAt.toISOString(),
   });
 }
 
@@ -111,6 +112,7 @@ export async function PATCH(
     content: notice.content,
     viewCount: notice.viewCount,
     createdAt: notice.createdAt.toISOString(),
+    updatedAt: notice.updatedAt.toISOString(),
   });
 }
 

@@ -75,4 +75,5 @@ export interface Notice {
   authorNickname?: string;
   viewCount: number;
   createdAt: string;
+  updatedAt?: string;
 }

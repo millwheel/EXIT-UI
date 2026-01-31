@@ -191,8 +191,7 @@ export async function POST(request: NextRequest) {
     })),
     count: createdAds.length,
   }, { status: 201 });
-}
-
+}ㅊ
 export async function DELETE(request: NextRequest) {
   const session = await getSession();
   if (!session) {

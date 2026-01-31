@@ -6,10 +6,7 @@ import { Notice, Role } from '@/types';
 import Button from '@/components/ui/Button';
 import { useToast } from '@/hooks/useToast';
 import { canManageNotices, canViewNotices } from '@/lib/permissions';
-
-function formatDate(dateString: string): string {
-  return new Date(dateString).toISOString().split('T')[0];
-}
+import { formatDate } from '@/components/util/Date';
 
 export default function NoticeDetailPage() {
   const router = useRouter();
@@ -105,6 +102,7 @@ export default function NoticeDetailPage() {
           <h2 className="text-xl font-semibold text-gray-900">{notice.title}</h2>
           <div className="flex gap-4 mt-2 text-sm text-gray-500">
             <span>작성일: {formatDate(notice.createdAt)}</span>
+            {notice.updatedAt && <span>최종수정일: {formatDate(notice.updatedAt)}</span>}
             <span>조회수: {notice.viewCount}</span>
           </div>
         </div>

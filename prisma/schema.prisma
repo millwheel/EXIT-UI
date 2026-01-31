@@ -58,4 +58,5 @@ model Notice {
   author    User?    @relation(fields: [authorId], references: [id])
   viewCount Int      @default(0) @map("view_count")
   createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 }

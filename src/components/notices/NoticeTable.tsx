@@ -2,13 +2,10 @@
 
 import { useRouter } from 'next/navigation';
 import { Notice } from '@/types';
+import { formatDate } from '@/components/util/Date';
 
 interface NoticeTableProps {
   notices: Notice[];
-}
-
-function formatDate(dateString: string): string {
-  return new Date(dateString).toISOString().split('T')[0];
 }
 
 export default function NoticeTable({ notices }: NoticeTableProps) {

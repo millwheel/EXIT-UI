@@ -5,12 +5,7 @@ import Button from '@/components/ui/Button';
 import { useToast } from '@/hooks/useToast';
 import { Role } from '@/types';
 import { validatePassword } from '@/lib/validation';
-
-const ROLE_LABELS: Record<Role, string> = {
-  MASTER: '총판사',
-  AGENCY: '대행사',
-  ADVERTISER: '광고주',
-};
+import {ROLE_LABELS} from "@/components/util/RoleLabel";
 
 interface UserProfile {
   id: number;

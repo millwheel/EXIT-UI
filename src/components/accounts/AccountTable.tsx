@@ -1,6 +1,7 @@
 'use client';
 
 import { User } from '@/types';
+import {ROLE_LABELS} from "@/components/util/RoleLabel";
 
 interface AccountTableProps {
   accounts: User[];
@@ -15,12 +16,6 @@ const ROLE_STYLES: Record<string, string> = {
   MASTER: 'text-gray-900 font-medium',
   AGENCY: 'text-blue-600 font-medium',
   ADVERTISER: 'text-green-600 font-medium',
-};
-
-const ROLE_LABELS: Record<string, string> = {
-  MASTER: '총판사',
-  AGENCY: '대행사',
-  ADVERTISER: '광고주',
 };
 
 export default function AccountTable({ accounts, selectedIds, onSelectionChange, onEdit, showCheckbox = true, showEdit = true }: AccountTableProps) {
@@ -94,7 +89,7 @@ export default function AccountTable({ accounts, selectedIds, onSelectionChange,
                   <td className="px-3 py-3 text-gray-900">{account.username}</td>
                   <td className="px-3 py-3">
                     <span className={ROLE_STYLES[account.role] || ''}>
-                      {ROLE_LABELS[account.role] || account.role}
+                      {ROLE_LABELS[account.role]}
                     </span>
                   </td>
                   <td className="px-3 py-3 text-gray-600 truncate max-w-[200px]">{account.memo || ''}</td>
