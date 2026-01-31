@@ -5,6 +5,7 @@ import Modal from '@/components/ui/Modal';
 import Button from '@/components/ui/Button';
 import {Organization, Role} from '@/types';
 import { getCreateableRoles } from '@/lib/permissions';
+import { validatePassword } from '@/lib/validation';
 
 
 interface AccountCreateModalProps {
@@ -58,6 +59,14 @@ export default function AccountCreateModal({ isOpen, onClose, onSuccess, current
 
   async function handleSubmit() {
     setError('');
+
+    // Client-side password validation
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.valid) {
+      setError(passwordValidation.error || '');
+      return;
+    }
+
     setLoading(true);
 
     try {

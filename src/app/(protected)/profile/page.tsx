@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Button from '@/components/ui/Button';
 import { useToast } from '@/hooks/useToast';
 import { Role } from '@/types';
+import { validatePassword } from '@/lib/validation';
 
 const ROLE_LABELS: Record<Role, string> = {
   MASTER: '총판사',
@@ -48,6 +49,15 @@ export default function ProfilePage() {
     if (!nickname.trim()) {
       addToast('닉네임을 입력해주세요.', 'error');
       return;
+    }
+
+    // Client-side password validation
+    if (password) {
+      const passwordValidation = validatePassword(password);
+      if (!passwordValidation.valid) {
+        addToast(passwordValidation.error || '비밀번호 오류', 'error');
+        return;
+      }
     }
 
     setLoading(true);

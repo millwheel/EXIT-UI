@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Modal from '@/components/ui/Modal';
 import Button from '@/components/ui/Button';
 import { Role } from '@/types';
+import { validatePassword } from '@/lib/validation';
 
 interface AccountEditModalProps {
   isOpen: boolean;
@@ -81,6 +82,16 @@ export default function AccountEditModal({
     if (!accountId) return;
 
     setError('');
+
+    // Client-side password validation
+    if (changePassword && password) {
+      const passwordValidation = validatePassword(password);
+      if (!passwordValidation.valid) {
+        setError(passwordValidation.error || '');
+        return;
+      }
+    }
+
     setSaving(true);
 
     try {

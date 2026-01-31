@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { Role } from '@/types';
+import { validatePassword } from '@/lib/validation';
 
 export async function GET(
   request: NextRequest,
@@ -103,6 +104,10 @@ export async function PUT(
   const data: { password?: string; nickname?: string; memo?: string | null } = {};
 
   if (password) {
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.valid) {
+      return NextResponse.json({ error: passwordValidation.error }, { status: 400 });
+    }
     data.password = await bcrypt.hash(password, 10);
   }
   if (nickname !== undefined) {

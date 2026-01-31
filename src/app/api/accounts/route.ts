@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { Role } from '@/types';
+import { validatePassword } from '@/lib/validation';
 
 const PAGE_SIZE = 10;
 
@@ -98,6 +99,12 @@ export async function POST(request: NextRequest) {
 
   if (!username || !nickname?.trim() || !password || !role) {
     return NextResponse.json({ error: '필수 항목을 입력해주세요.' }, { status: 400 });
+  }
+
+  // Password validation
+  const passwordValidation = validatePassword(password);
+  if (!passwordValidation.valid) {
+    return NextResponse.json({ error: passwordValidation.error }, { status: 400 });
   }
 
   // Permission check: MASTER can create AGENCY/ADVERTISER, AGENCY can only create ADVERTISER
